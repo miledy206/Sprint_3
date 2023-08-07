@@ -1,39 +1,32 @@
-import random
 import pytest
-import string
+from selenium import webdriver
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
 
-@pytest.fixture
-def generation_correct_password():
-    """Генератор простого пароля с цифрами и буквами на 13 символов"""
-    line = string.ascii_letters + string.digits
-    passw = ''
-    for i in range(12):
-        passw = passw + random.choice(line)
-    return passw
+from tests.locators import *
+from tests.data import *
 
-@pytest.fixture
-def generation_incorrect_password():
-    """Генератор простого пароля с цифрами и буквами на 4 символов"""
-    line = string.ascii_letters + string.digits
-    passw = ''
-    for i in range(3):
-        passw = passw + random.choice(line)
-    return passw
 
-@pytest.fixture
-def generation_correct_email():
-    """Генератор email согласно маске для кейсов регистрации"""
-    login = 'safronova_olesia_12_' + str(random.randint(100, 999)) + '@ya.ru'
-    return login
+@pytest.fixture(scope="function")
+def run_driver():
+    driver = webdriver.Chrome()
+    driver.maximize_window()
+    yield driver
+    driver.quit()
 
-@pytest.fixture
-def login_correct_email():
-    """Созданный заранее и зарегистрированный тестовый пользователь"""
-    login = 'safronova_olesya_12_123@ya.ru'
-    return login
 
-@pytest.fixture
-def login_correct_pass():
-    """Созданный заранее и зарегистрированный тестовый пользователь"""
-    passw = 'Yandex1234'
-    return passw
+@pytest.fixture(scope="function")
+def success_login():
+    driver = webdriver.Chrome()
+    driver.maximize_window()
+    driver.get('https://stellarburgers.nomoreparties.site/')
+
+    WebDriverWait(driver, 3).until(expected_conditions.visibility_of_element_located(
+        ButtonsLocators.FIND_LOGIN_BTN_MAIN_PAGE)).click()
+
+    driver.find_element(*PersonalDataLocators.FIND_EMAIL_FIELD).send_keys(email)
+    driver.find_element(*PersonalDataLocators.FIND_PASSWORD_FIELD).send_keys(password)
+
+    driver.find_element(*ButtonsLocators.FIND_LOGIN_BTN_LOGIN_PAGE).click()
+    yield driver
+    driver.quit()

@@ -1,67 +1,73 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
+from tests.data import *
+from tests.helper import *
+from tests.locators import *
+
 
 class TestRegistration:
-    name = 'Олеся'
 
-    def test_registration_correct_data(self, generation_correct_email, generation_correct_password):
+    def test_registration_correct_data(self, run_driver):
         """Позитивная проверка на регистрацию пользователя"""
 
-        self.login = generation_correct_email
-        self.password = generation_correct_password
+        correct_login = generation_correct_email()
+        correct_password = generation_correct_password()
 
-        driver = webdriver.Chrome()
-        driver.maximize_window()
+        driver = run_driver
         driver.get('https://stellarburgers.nomoreparties.site/')
 
         WebDriverWait(driver, 3).until(
             expected_conditions.visibility_of_element_located(
-                (By.XPATH, './/button[text() = "Войти в аккаунт"]'))).click()
+                ButtonsLocators.FIND_LOGIN_BTN_MAIN_PAGE)).click()
 
         WebDriverWait(driver, 3).until(expected_conditions.visibility_of_element_located(
-            (By.XPATH, './/a[text() = "Зарегистрироваться"]'))).click()
+            ButtonsLocators.FIND_REGISTRATION_LINK)).click()
 
-        driver.find_element(By.XPATH, './/label[text() = "Имя"]/parent::div/input').send_keys(self.name)
-        driver.find_element(By.XPATH, './/label[text() = "Email"]/parent::div/input').send_keys(self.login)
-        driver.find_element(By.XPATH, './/label[text() = "Пароль"]/parent::div/input').send_keys(self.password)
+        driver.find_element(*PersonalDataLocators.FIND_NAME_FIELD).send_keys(name)
+        driver.find_element(*PersonalDataLocators.FIND_EMAIL_FIELD).send_keys(correct_login)
+        driver.find_element(*PersonalDataLocators.FIND_PASSWORD_FIELD).send_keys(correct_password)
 
-        driver.find_element(By.XPATH, './/button[text() = "Зарегистрироваться"]').click()
+        driver.find_element(*ButtonsLocators.FIND_REGISTRATION_BTN).click()
 
         WebDriverWait(driver, 3).until(expected_conditions.visibility_of_element_located(
-            (By.XPATH, './/h2[text() = "Вход"]')))
+            HelpingTexts.LOGIN_HEADER))
 
-        assert driver.find_element(By.XPATH, './/button[text() = "Войти"]')
+        driver.find_element(*PersonalDataLocators.FIND_EMAIL_FIELD).send_keys(correct_login)
+        driver.find_element(*PersonalDataLocators.FIND_PASSWORD_FIELD).send_keys(correct_password)
 
-        driver.quit()
+        driver.find_element(*ButtonsLocators.FIND_LOGIN_BTN_LOGIN_PAGE).click()
+        driver.find_element(*ButtonsLocators.FIND_PROFILE_BTN).click()
 
-    def test_registration_too_short_password(self, generation_correct_email, generation_incorrect_password):
+        WebDriverWait(driver, 3).until(
+            expected_conditions.visibility_of_element_located(HelpingTexts.PROFILE_LINK))
+
+        check_value = driver.find_element(*PersonalDataLocators.FIND_LOGIN_FIELD).get_attribute(
+            'value')
+        assert check_value == correct_login
+
+    def test_registration_too_short_password(self, run_driver):
         """Негативная проверка на регистрацию пользователя: некорректный пароль"""
 
-        self.login = generation_correct_email
-        self.password = generation_incorrect_password
+        correct_login = generation_correct_email()
+        incorrect_password = generation_incorrect_password()
 
-        driver = webdriver.Chrome()
-        driver.maximize_window()
+        driver = run_driver
         driver.get('https://stellarburgers.nomoreparties.site/')
 
         WebDriverWait(driver, 3).until(
             expected_conditions.visibility_of_element_located(
-                (By.XPATH, './/button[text() = "Войти в аккаунт"]'))).click()
+                ButtonsLocators.FIND_LOGIN_BTN_MAIN_PAGE)).click()
 
         WebDriverWait(driver, 3).until(expected_conditions.visibility_of_element_located(
-            (By.XPATH, './/a[text() = "Зарегистрироваться"]'))).click()
+            ButtonsLocators.FIND_REGISTRATION_LINK)).click()
 
-        driver.find_element(By.XPATH, './/label[text() = "Имя"]/parent::div/input').send_keys(self.name)
-        driver.find_element(By.XPATH, './/label[text() = "Email"]/parent::div/input').send_keys(self.login)
-        driver.find_element(By.XPATH, './/label[text() = "Пароль"]/parent::div/input').send_keys(self.password)
+        driver.find_element(*PersonalDataLocators.FIND_NAME_FIELD).send_keys(name)
+        driver.find_element(*PersonalDataLocators.FIND_EMAIL_FIELD).send_keys(correct_login)
+        driver.find_element(*PersonalDataLocators.FIND_PASSWORD_FIELD).send_keys(incorrect_password)
 
-        driver.find_element(By.XPATH, './/button[text() = "Зарегистрироваться"]').click()
+        driver.find_element(*ButtonsLocators.FIND_REGISTRATION_BTN).click()
 
         WebDriverWait(driver, 3)
 
-        assert driver.find_element(By.XPATH, './/p[text() = "Некорректный пароль"]')
-
-        driver.quit()
+        assert driver.find_element(*HelpingTexts.INCORRECT_PASSWORD_MESSAGE)

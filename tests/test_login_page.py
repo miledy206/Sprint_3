@@ -1,136 +1,102 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
+
+from tests.locators import *
+from tests.data import *
 
 
 class TestLogin:
 
-    def test_login_correct_data_via_login_btn(self, login_correct_email, login_correct_pass):
+    def test_login_correct_data_via_login_btn(self, success_login):
         """Позитивная проверка на авторизацию с помощью кнопки 'Войти в аккаунт' на главной странице"""
 
-        self.login = login_correct_email
-        self.password = login_correct_pass
-
-        driver = webdriver.Chrome()
-        driver.maximize_window()
-        driver.get('https://stellarburgers.nomoreparties.site/')
+        driver = success_login
+        driver.find_element(*ButtonsLocators.FIND_PROFILE_BTN).click()
 
         WebDriverWait(driver, 3).until(
-            expected_conditions.visibility_of_element_located(
-                (By.XPATH, './/button[text() = "Войти в аккаунт"]'))).click()
+            expected_conditions.visibility_of_element_located(HelpingTexts.PROFILE_LINK))
 
-        driver.find_element(By.XPATH, './/label[text() = "Email"]/parent::div/input').send_keys(self.login)
-        driver.find_element(By.XPATH, './/label[text() = "Пароль"]/parent::div/input').send_keys(self.password)
-
-        driver.find_element(By.XPATH, './/button[text() = "Войти"]').click()
-        driver.find_element(By.XPATH, './/p[text() = "Личный Кабинет"]').click()
-
-        WebDriverWait(driver, 3).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, './/a[text() = "Профиль"]')))
-
-        check_value = driver.find_element(By.XPATH, './/label[text() = "Имя"]/parent::div/input').get_attribute(
+        check_value = driver.find_element(*PersonalDataLocators.FIND_NAME_FIELD).get_attribute(
             'value')
-        assert check_value == 'Олеся'
+        assert check_value == name
 
-        driver.quit()
-
-    def test_login_correct_data_via_profile(self, login_correct_email, login_correct_pass):
+    def test_login_correct_data_via_profile(self, run_driver):
         """Позитивная проверка на авторизацию через переход в меню 'Личный кабинет' на главной странице"""
 
-        self.login = login_correct_email
-        self.password = login_correct_pass
-
-        driver = webdriver.Chrome()
-        driver.maximize_window()
+        driver = run_driver
         driver.get('https://stellarburgers.nomoreparties.site/')
 
         WebDriverWait(driver, 3).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, './/p[text() = "Личный Кабинет"]'))).click()
+            expected_conditions.visibility_of_element_located(ButtonsLocators.FIND_PROFILE_BTN)).click()
 
-        driver.find_element(By.XPATH, './/label[text() = "Email"]/parent::div/input').send_keys(self.login)
-        driver.find_element(By.XPATH, './/label[text() = "Пароль"]/parent::div/input').send_keys(self.password)
+        driver.find_element(*PersonalDataLocators.FIND_EMAIL_FIELD).send_keys(email)
+        driver.find_element(*PersonalDataLocators.FIND_PASSWORD_FIELD).send_keys(password)
 
-        driver.find_element(By.XPATH, './/button[text() = "Войти"]').click()
-        driver.find_element(By.XPATH, './/p[text() = "Личный Кабинет"]').click()
+        driver.find_element(*ButtonsLocators.FIND_LOGIN_BTN_LOGIN_PAGE).click()
+        driver.find_element(*ButtonsLocators.FIND_PROFILE_BTN).click()
 
-        WebDriverWait(driver,3).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, './/a[text() = "Профиль"]')))
+        WebDriverWait(driver, 3).until(
+            expected_conditions.visibility_of_element_located(HelpingTexts.PROFILE_LINK))
 
-        check_value = driver.find_element(By.XPATH, './/label[text() = "Имя"]/parent::div/input').get_attribute('value')
+        check_value = driver.find_element(*PersonalDataLocators.FIND_NAME_FIELD).get_attribute('value')
+        assert check_value == name
 
-        assert check_value == 'Олеся'
-
-        driver.quit()
-
-    def test_login_correct_data_via_restore_password(self, login_correct_email, login_correct_pass):
+    def test_login_correct_data_via_restore_password(self,run_driver):
         """Позитивная проверка на авторизацию через восстановление пароля"""
 
-        self.login = login_correct_email
-        self.password = login_correct_pass
-
-        driver = webdriver.Chrome()
-        driver.maximize_window()
+        driver = run_driver
         driver.get('https://stellarburgers.nomoreparties.site/')
 
         WebDriverWait(driver, 3).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, './/p[text() = "Личный Кабинет"]'))).click()
+            expected_conditions.visibility_of_element_located(ButtonsLocators.FIND_PROFILE_BTN)).click()
 
         WebDriverWait(driver, 3).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, './/h2[text() = "Вход"]')))
+            expected_conditions.visibility_of_element_located(HelpingTexts.LOGIN_HEADER))
 
-        driver.find_element(By.XPATH, './/a[text() = "Восстановить пароль"]').click()
+        driver.find_element(*ButtonsLocators.FIND_RECOVER_PASS_LINK).click()
 
         WebDriverWait(driver, 3).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, './/h2[text() = "Восстановление пароля"]')))
+            expected_conditions.visibility_of_element_located(HelpingTexts.RECOVER_HEADER))
 
-        driver.find_element(By.XPATH, './/a[text() = "Войти"]').click()
+        driver.find_element(*ButtonsLocators.FIND_LOGIN_LINK).click()
 
-        driver.find_element(By.XPATH, './/label[text() = "Email"]/parent::div/input').send_keys(self.login)
-        driver.find_element(By.XPATH, './/label[text() = "Пароль"]/parent::div/input').send_keys(self.password)
+        driver.find_element(*PersonalDataLocators.FIND_EMAIL_FIELD).send_keys(email)
+        driver.find_element(*PersonalDataLocators.FIND_PASSWORD_FIELD).send_keys(password)
 
-        driver.find_element(By.XPATH, './/button[text() = "Войти"]').click()
-        driver.find_element(By.XPATH, './/p[text() = "Личный Кабинет"]').click()
+        driver.find_element(*ButtonsLocators.FIND_LOGIN_BTN_LOGIN_PAGE).click()
+        driver.find_element(*ButtonsLocators.FIND_PROFILE_BTN).click()
 
         WebDriverWait(driver, 5).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, './/label[text() = "Имя"]')))
+            expected_conditions.visibility_of_element_located(HelpingTexts.NAME_FIELD))
 
-        check_value = driver.find_element(By.XPATH, './/label[text() = "Имя"]/parent::div/input').get_attribute('value')
+        check_value = driver.find_element(*PersonalDataLocators.FIND_NAME_FIELD).get_attribute('value')
 
-        assert check_value == 'Олеся'
+        assert check_value == name
 
-        driver.quit()
-
-    def test_login_correct_data_via_registration(self, login_correct_email, login_correct_pass):
+    def test_login_correct_data_via_registration(self, run_driver):
         """Позитивная проверка на авторизацию через страницу регистрации"""
 
-        self.login = login_correct_email
-        self.password = login_correct_pass
-
-        driver = webdriver.Chrome()
-        driver.maximize_window()
+        driver = run_driver
         driver.get('https://stellarburgers.nomoreparties.site/')
 
         WebDriverWait(driver, 3).until(expected_conditions.visibility_of_element_located(
-            (By.XPATH, './/button[text() = "Войти в аккаунт"]'))).click()
+            ButtonsLocators.FIND_LOGIN_BTN_MAIN_PAGE)).click()
 
         WebDriverWait(driver, 3).until(expected_conditions.visibility_of_element_located(
-            (By.XPATH, './/a[text() = "Зарегистрироваться"]'))).click()
+            ButtonsLocators.FIND_REGISTRATION_LINK)).click()
 
-        driver.find_element(By.XPATH, './/a[text() = "Войти"]').click()
+        driver.find_element(*ButtonsLocators.FIND_LOGIN_LINK).click()
 
-        driver.find_element(By.XPATH, './/label[text() = "Email"]/parent::div/input').send_keys(self.login)
-        driver.find_element(By.XPATH, './/label[text() = "Пароль"]/parent::div/input').send_keys(self.password)
+        driver.find_element(*PersonalDataLocators.FIND_EMAIL_FIELD).send_keys(email)
+        driver.find_element(*PersonalDataLocators.FIND_PASSWORD_FIELD).send_keys(password)
 
-        driver.find_element(By.XPATH, './/button[text() = "Войти"]').click()
-
-        driver.find_element(By.XPATH, './/p[text() = "Личный Кабинет"]').click()
+        driver.find_element(*ButtonsLocators.FIND_LOGIN_BTN_LOGIN_PAGE).click()
+        driver.find_element(*ButtonsLocators.FIND_PROFILE_BTN).click()
 
         WebDriverWait(driver, 3).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, './/a[text() = "Профиль"]')))
+            expected_conditions.visibility_of_element_located(HelpingTexts.PROFILE_LINK))
 
-        check_value = driver.find_element(By.XPATH, './/label[text() = "Имя"]/parent::div/input').get_attribute('value')
+        check_value = driver.find_element(*PersonalDataLocators.FIND_NAME_FIELD).get_attribute('value')
 
-        assert check_value == 'Олеся'
+        assert check_value == name
 
-        driver.quit()
