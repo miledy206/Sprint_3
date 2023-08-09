@@ -1,9 +1,9 @@
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from tests.data import *
-from tests.helper import *
-from tests.locators import *
+from data import *
+from helper import *
+from locators import *
 
 
 class TestRegistration:
